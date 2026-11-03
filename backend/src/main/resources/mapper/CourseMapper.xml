@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.mapper.CourseMapper">
+
+    <select id="selectList" resultType="com.exam.entity.Course">
+        SELECT * FROM `course`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND course_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectById" resultType="com.exam.entity.Course">
+        SELECT * FROM `course` WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `course` (course_name, description)
+        VALUES (#{courseName}, #{description})
+    </insert>
+
+    <update id="update">
+        UPDATE `course`
+        SET course_name = #{courseName},
+            description = #{description}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM `course` WHERE id = #{id}
+    </delete>
+
+    <select id="countQuestions" resultType="int">
+        SELECT COUNT(*) FROM `question` WHERE course_id = #{courseId}
+    </select>
+
+    <select id="countPapers" resultType="int">
+        SELECT COUNT(*) FROM `paper` WHERE course_id = #{courseId}
+    </select>
+</mapper>

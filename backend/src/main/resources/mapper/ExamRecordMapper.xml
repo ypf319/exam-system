@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exam.mapper.ExamRecordMapper">
+
+    <select id="selectById" resultType="com.exam.entity.ExamRecord">
+        SELECT * FROM `exam_record` WHERE id = #{id}
+    </select>
+
+    <select id="selectByPaperAndStudent" resultType="com.exam.entity.ExamRecord">
+        SELECT * FROM `exam_record`
+        WHERE paper_id = #{paperId} AND student_id = #{studentId}
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
+    <sql id="recordColumns">
+        r.*, p.paper_name, p.total_score, c.course_name,
+        u.real_name AS student_name, u.username
+    </sql>
+
+    <select id="selectByStudent" resultType="com.exam.vo.RecordVO">
+        SELECT <include refid="recordColumns"/>
+        FROM `exam_record` r
+        INNER JOIN `paper` p ON r.paper_id = p.id
+        LEFT JOIN `course` c ON p.course_id = c.id
+        LEFT JOIN `user` u ON r.student_id = u.id
+        WHERE r.student_id = #{studentId} AND r.status = 1
+        ORDER BY r.submit_time DESC
+    </select>
+
+    <select id="selectByPaper" resultType="com.exam.vo.RecordVO">
+        SELECT <include refid="recordColumns"/>
+        FROM `exam_record` r
+        INNER JOIN `paper` p ON r.paper_id = p.id
+        LEFT JOIN `course` c ON p.course_id = c.id
+        LEFT JOIN `user` u ON r.student_id = u.id
+        WHERE r.paper_id = #{paperId}
+        ORDER BY r.status DESC, r.score DESC, r.id
+    </select>
+
+    <select id="selectDetailById" resultType="com.exam.vo.RecordVO">
+        SELECT <include refid="recordColumns"/>
+        FROM `exam_record` r
+        INNER JOIN `paper` p ON r.paper_id = p.id
+        LEFT JOIN `course` c ON p.course_id = c.id
+        LEFT JOIN `user` u ON r.student_id = u.id
+        WHERE r.id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `exam_record` (paper_id, student_id, student_answer, score, status)
+        VALUES (#{paperId}, #{studentId}, #{studentAnswer}, #{score}, #{status})
+    </insert>
+
+    <update id="updateSubmit">
+        UPDATE `exam_record`
+        SET student_answer = #{studentAnswer},
+            score = #{score},
+            submit_time = #{submitTime},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteByPaperId">
+        DELETE FROM `exam_record` WHERE paper_id = #{paperId}
+    </delete>
+
+    <select id="countSubmittedByPaper" resultType="int">
+        SELECT COUNT(*) FROM `exam_record` WHERE paper_id = #{paperId} AND status = 1
+    </select>
+</mapper>
